@@ -1,0 +1,145 @@
+<ui:composition template="/WEB-INF/template/LayoutPadrao.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" xmlns:o="http://omnifaces.org/ui">
+
+	<ui:define name="titulo">Novo Usuário</ui:define>
+
+	<ui:define name="corpo">
+		<f:metadata>
+			<o:viewParam name="usuario" value="#{cadastroUsuario.usuario}"
+				converter="#{usuarioConverter}" />
+			<o:viewAction action="#{cadastroUsuario.carregarMunicipios}"
+				if="#{cadastroUsuario.usuario ne null}" />
+		</f:metadata>
+
+		<h1>Novo Usuário</h1>
+
+		<h:form id="frmCadastro">
+			<p:messages id="messages" closable="true">
+				<p:autoUpdate />
+			</p:messages>
+
+			<p:toolbar style="margin-top: 20px">
+				<p:toolbarGroup>
+					<p:commandButton value="Salvar" id="botaoSalvar"
+						action="#{cadastroUsuario.salvar}" update="frmCadastro" />
+				</p:toolbarGroup>
+				<p:toolbarGroup align="right">
+					<p:button value="Pesquisa" outcome="PesquisaUsuarios" />
+				</p:toolbarGroup>
+			</p:toolbar>
+
+			<p:panelGrid columns="2" id="painel"
+				style="width: 100%; margin-top: 20px" columnClasses="rotulo, campo">
+				<p:outputLabel value="Nome" for="nome" />
+				<p:inputText id="nome" value="#{cadastroUsuario.usuario.nome}"
+					required="true" size="60"
+					requiredMessage="Campo de preenchimento obrigatório!" />
+
+				<p:outputLabel value="Username" for="username" />
+				<p:inputText id="username"
+					value="#{cadastroUsuario.usuario.username}" required="true"
+					requiredMessage="Campo de preenchimento obrigatório!" />
+
+				<p:outputLabel value="Password" for="password" />
+				<p:password id="password" feedback="true" redisplay="true"
+					value="#{cadastroUsuario.usuario.password}" required="true"
+					requiredMessage="Campo de preenchimento obrigatório!">
+					<f:validateRegex pattern="(?=.*\d+)(?=.*[a-z])(?=.*[A-Z]).*" />
+					<f:validateLength minimum="8" />
+				</p:password>
+
+				<p:outputLabel for="cep" value="CEP" />
+				<p:inputMask id="cep"
+					value="#{cadastroUsuario.usuario.endereco.cep}"
+					converter="#{cepConverter}" mask="99999-999" required="true"
+					requiredMessage="CEP obrigatório!">
+					<p:ajax listener="#{cadastroUsuario.carregarEndereco}"
+						update="estado municipio logradouro numero" />
+				</p:inputMask>
+
+				<p:outputLabel value="Estado" for="estado" />
+				<p:selectOneMenu id="estado" converter="#{estadoConverter}"
+					value="#{cadastroUsuario.usuario.endereco.municipio.estado}"
+					required="true" requiredMessage="Estado obrigatório!"
+					disabled="#{cadastroUsuario.desabilitaEndereco}">
+					<f:selectItem itemLabel="Selecione o Estado" />
+					<f:selectItems value="#{cadastroUsuario.estados}" var="estado"
+						itemLabel="#{estado.nome}" itemValue="#{estado}" />
+					<p:ajax update="municipio"
+						listener="#{cadastroUsuario.carregarMunicipios}" />
+				</p:selectOneMenu>
+
+				<p:outputLabel value="Município" for="municipio" />
+				<p:selectOneMenu id="municipio" converter="#{municipioConverter}"
+					value="#{cadastroUsuario.usuario.endereco.municipio}"
+					required="true" requiredMessage="Município obrigatório!"
+					disabled="#{cadastroUsuario.desabilitaEndereco}">
+					<f:selectItem itemLabel="Selecione o Município" />
+					<f:selectItems value="#{cadastroUsuario.municipios}"
+						var="municipio" itemLabel="#{municipio.nome}"
+						itemValue="#{municipio}" />
+				</p:selectOneMenu>
+
+				<p:outputLabel value="Logradouro" for="logradouro" />
+				<p:inputText id="logradouro" size="60" maxlength="80"
+					disabled="#{cadastroUsuario.desabilitaEndereco}"
+					value="#{cadastroUsuario.usuario.endereco.logradouro}"
+					required="true" requiredMessage="Logradouro obrigatório!" />
+
+				<p:outputLabel value="Número" for="numero" />
+				<p:inputText id="numero"
+					disabled="#{cadastroUsuario.desabilitaEndereco}"
+					value="#{cadastroUsuario.usuario.endereco.numero}" required="true"
+					requiredMessage="Número obrigatório!" />
+
+				<p:outputLabel value="Email" for="email" />
+				<p:inputText id="email" value="#{cadastroUsuario.usuario.email}"
+					required="true" requiredMessage="Email obrigatório!" />
+
+				<p:outputLabel value="Data de Nascimento" for="dataDeNascimento" />
+				<p:calendar id="dataDeNascimento" pattern="dd/MM/yyyy"
+					value="#{cadastroUsuario.usuario.dataDeNascimento}"
+					navigator="true" mask="true">
+					<f:convertDateTime type="localDate" pattern="dd/MM/yyyy" />
+				</p:calendar>
+
+				<p:outputLabel value="Sexo" for="sexo" />
+				<p:selectOneRadio id="sexo" value="#{cadastroUsuario.usuario.sexo}">
+					<f:selectItems value="#{cadastroUsuario.sexos}" var="sexo"
+						itemLabel="#{sexo.descricao}" itemValue="#{sexo}" />
+				</p:selectOneRadio>
+
+				<p:outputLabel value="Tipo" for="tipo" />
+				<p:selectOneRadio id="tipo" value="#{cadastroUsuario.usuario.tipo}">
+					<f:selectItems value="#{cadastroUsuario.tipos}" var="tipo"
+						itemLabel="#{tipo.descricao}" itemValue="#{tipo}" />
+					<p:ajax update="cpfInput cpnjInput cpfLabel cnpjLabel" />
+				</p:selectOneRadio>
+
+				<h:panelGroup id="cpfLabel">
+					<p:outputLabel for="cpf" value="Cpf"
+						rendered="#{cadastroUsuario.usuario.pessoaFisica}" />
+				</h:panelGroup>
+				<h:panelGroup id="cpfInput">
+					<p:inputMask id="cpf" value="#{cadastroUsuario.usuario.cpf}"
+						mask="999.999.999-99"
+						rendered="#{cadastroUsuario.usuario.pessoaFisica}" />
+				</h:panelGroup>
+
+				<h:panelGroup id="cnpjLabel">
+					<p:outputLabel for="cnpj" value="Cnpj"
+						rendered="#{not cadastroUsuario.usuario.pessoaFisica}" />
+				</h:panelGroup>
+				<h:panelGroup id="cpnjInput">
+					<p:inputMask id="cnpj" value="#{cadastroUsuario.usuario.cnpj}"
+						mask="99.999.999/9999-99"
+						rendered="#{not cadastroUsuario.usuario.pessoaFisica}" />
+				</h:panelGroup>
+			</p:panelGrid>
+		</h:form>
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,62 @@
+<ui:composition template="/WEB-INF/template/LayoutPadrao.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+	<ui:define name="titulo">Pesquisa de Municípios</ui:define>
+
+	<ui:define name="corpo">
+		<h1>Pesquisa de Municípios</h1>
+
+		<h:form id="frmPesquisa">
+			<p:messages id="messages" closable="true">
+				<p:autoUpdate />
+			</p:messages>
+
+			<p:toolbar style="margin-top: 20px">
+				<p:toolbarGroup>
+					<p:button value="Novo" id="botaoNovo" outcome="CadastroMunicipio" />
+				</p:toolbarGroup>
+			</p:toolbar>
+
+			<p:dataTable id="municipiosTable"
+				value="#{pesquisaMunicipio.municipios}" var="municipio"
+				style="margin-top: 20px" emptyMessage="Nenhum municipio encontrado."
+				rows="20" paginator="true" paginatorAlwaysVisible="false"
+				paginatorPosition="bottom">
+				<p:column headerText="Nome">
+					<h:outputText value="#{municipio.nome}" />
+				</p:column>
+				<p:column headerText="Estado">
+					<h:outputText value="#{municipio.estado.nome}" />
+				</p:column>
+				<p:column style="width: 100px; text-align: center">
+					<p:button outcome="CadastroMunicipio" icon="ui-icon-pencil"
+						title="Editar">
+						<f:param name="municipio" value="#{municipio.id}" />
+					</p:button>
+					<p:commandButton icon="ui-icon-trash" title="Excluir"
+						oncomplete="PF('confirmacaoExclusao').show()" process="@this"
+						update=":frmPesquisa:confirmacaoExclusaoDialog">
+						<f:setPropertyActionListener
+							target="#{pesquisaMunicipio.municipioSelecionado}"
+							value="#{municipio}" />
+					</p:commandButton>
+				</p:column>
+			</p:dataTable>
+
+			<p:confirmDialog id="confirmacaoExclusaoDialog"
+				widgetVar="confirmacaoExclusao"
+				message="Tem certeza que deseja excluir o municipio #{pesquisaMunicipio.municipioSelecionado.nome}?"
+				header="Exclusão de municipio" severity="alert">
+				<p:button value="Não"
+					onclick="PF('confirmacaoExclusao').hide(); return false;" />
+				<p:commandButton value="Sim" update=":frmPesquisa:municipiosTable"
+					onclick="PF('confirmacaoExclusao').hide()"
+					action="#{pesquisaMunicipio.excluir}" />
+			</p:confirmDialog>
+		</h:form>
+	</ui:define>
+</ui:composition>

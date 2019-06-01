@@ -1,0 +1,82 @@
+<ui:composition template="/WEB-INF/template/LayoutPadrao.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+	<ui:define name="titulo">Pesquisa de Endereços</ui:define>
+
+	<ui:define name="corpo">
+		<h1>Pesquisa de Endereços</h1>
+
+		<h:form id="frmPesquisa">
+			<p:messages id="messages" closable="true">
+				<p:autoUpdate />
+			</p:messages>
+
+			<p:toolbar style="margin-top: 20px">
+				<p:toolbarGroup>
+					<p:commandButton value="Pesquisar" update="@form"
+						action="#{pesquisaEndereco.filtrar}" process="@this painel" />
+				</p:toolbarGroup>
+				<p:toolbarGroup>
+					<p:button value="Novo" id="botaoNovo" outcome="CadastroEndereco" />
+				</p:toolbarGroup>
+			</p:toolbar>
+
+			<p:panelGrid columns="2" id="painel"
+				style="width:100%;margin-top:20px" columnClasses="rotulo, campo">
+				<p:outputLabel for="cep" value="CEP" />
+				<p:inputMask id="cep" value="#{pesquisaEndereco.cep}"
+					converter="#{cepConverter}" mask="99999-999" />
+			</p:panelGrid>
+
+			<p:dataTable id="enderecosTable"
+				value="#{pesquisaEndereco.enderecos}" var="endereco"
+				style="margin-top: 20px" emptyMessage="Nenhum endereço encontrado."
+				rows="20" paginator="true" paginatorAlwaysVisible="false"
+				paginatorPosition="bottom">
+				<p:column headerText="CEP">
+					<h:outputText value="#{endereco.cep}" converter="#{cepConverter}" />
+				</p:column>
+				<p:column headerText="Estado">
+					<h:outputText value="#{endereco.municipio.estado.nome}" />
+				</p:column>
+				<p:column headerText="Município">
+					<h:outputText value="#{endereco.municipio.nome}" />
+				</p:column>
+				<p:column headerText="Logradouro">
+					<h:outputText value="#{endereco.logradouro}" />
+				</p:column>
+				<p:column headerText="Número">
+					<h:outputText value="#{endereco.numero}" />
+				</p:column>
+				<p:column style="width: 100px; text-align: center">
+					<p:button outcome="CadastroEndereco" icon="ui-icon-pencil"
+						title="Editar">
+						<f:param name="endereco" value="#{endereco.id}" />
+					</p:button>
+					<p:commandButton icon="ui-icon-trash" title="Excluir"
+						oncomplete="PF('confirmacaoExclusao').show()" process="@this"
+						update=":frmPesquisa:confirmacaoExclusaoDialog">
+						<f:setPropertyActionListener
+							target="#{pesquisaEndereco.enderecoSelecionado}"
+							value="#{endereco}" />
+					</p:commandButton>
+				</p:column>
+			</p:dataTable>
+
+			<p:confirmDialog id="confirmacaoExclusaoDialog"
+				widgetVar="confirmacaoExclusao"
+				message="Tem certeza que deseja excluir o endereço?"
+				header="Exclusão de endereço" severity="alert">
+				<p:button value="Não"
+					onclick="PF('confirmacaoExclusao').hide(); return false;" />
+				<p:commandButton value="Sim" update=":frmPesquisa:enderecosTable"
+					onclick="PF('confirmacaoExclusao').hide()"
+					action="#{pesquisaEndereco.excluir}" />
+			</p:confirmDialog>
+		</h:form>
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,90 @@
+<ui:composition template="/WEB-INF/template/LayoutPadrao.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+
+	<ui:define name="titulo">Pesquisa de Usuários</ui:define>
+
+	<ui:define name="corpo">
+		<h1>Pesquisa de Usuários</h1>
+
+		<h:form id="frmPesquisa">
+			<p:messages id="messages" closable="true">
+				<p:autoUpdate />
+			</p:messages>
+
+			<p:toolbar style="margin-top: 20px">
+				<p:toolbarGroup>
+					<p:commandButton value="Pesquisar" update="@form"
+						action="#{pesquisaUsuario.filtrar}" process="@this painel" />
+				</p:toolbarGroup>
+				<p:toolbarGroup>
+					<p:button value="Novo" id="botaoNovo" outcome="CadastroUsuario" />
+				</p:toolbarGroup>
+			</p:toolbar>
+
+			<p:panelGrid columns="2" id="painel"
+				style="width:100%;margin-top:20px" columnClasses="rotulo, campo">
+				<p:outputLabel for="nome" value="Nome" />
+				<p:inputText id="nome" value="#{pesquisaUsuario.nome}" />
+			</p:panelGrid>
+
+			<p:dataTable id="usuariosTable" value="#{pesquisaUsuario.usuarios}"
+				var="usuario" style="margin-top: 20px"
+				emptyMessage="Nenhum usuário encontrado." rows="20" paginator="true"
+				paginatorAlwaysVisible="false" paginatorPosition="bottom">
+				<p:column headerText="Nome">
+					<h:outputText value="#{usuario.nome}" />
+				</p:column>
+				<p:column headerText="Username">
+					<h:outputText value="#{usuario.username}" />
+				</p:column>
+				<p:column headerText="Email" colspan="2">
+					<h:outputText value="#{usuario.email}" />
+				</p:column>
+				<p:column headerText="Data de Nascimento">
+					<h:outputText value="#{usuario.dataDeNascimento}">
+						<f:convertDateTime type="localDate" pattern="dd/MM/yyyy" />
+					</h:outputText>
+				</p:column>
+				<p:column headerText="Sexo">
+					<h:outputText value="#{usuario.sexo.descricao}" />
+				</p:column>
+				<p:column headerText="Tipo">
+					<h:outputText value="#{usuario.tipo.descricao}" />
+				</p:column>
+				<p:column headerText="Cpf/Cnpj">
+					<h:outputText value="#{usuario.cpf}"
+						rendered="#{not empty usuario.cpf}" />
+					<h:outputText value="#{usuario.cnpj}"
+						rendered="#{not empty usuario.cnpj}" />
+				</p:column>
+				<p:column style="width: 100px; text-align: center">
+					<p:button outcome="CadastroUsuario" icon="ui-icon-pencil"
+						title="Editar">
+						<f:param name="usuario" value="#{usuario.id}" />
+					</p:button>
+					<p:commandButton icon="ui-icon-trash" title="Excluir"
+						oncomplete="PF('confirmacaoExclusao').show()" process="@this"
+						update=":frmPesquisa:confirmacaoExclusaoDialog">
+						<f:setPropertyActionListener
+							target="#{pesquisaUsuario.usuarioSelecionado}" value="#{usuario}" />
+					</p:commandButton>
+				</p:column>
+			</p:dataTable>
+
+			<p:confirmDialog id="confirmacaoExclusaoDialog"
+				widgetVar="confirmacaoExclusao"
+				message="Tem certeza que deseja excluir o usuário?"
+				header="Exclusão de usuário" severity="alert">
+				<p:button value="Não"
+					onclick="PF('confirmacaoExclusao').hide(); return false;" />
+				<p:commandButton value="Sim" update=":frmPesquisa:usuariosTable"
+					onclick="PF('confirmacaoExclusao').hide()"
+					action="#{pesquisaUsuario.excluir}" />
+			</p:confirmDialog>
+		</h:form>
+	</ui:define>
+</ui:composition>
